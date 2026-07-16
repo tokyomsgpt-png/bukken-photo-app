@@ -2,19 +2,21 @@ import type { Context, Config } from "@netlify/edge-functions";
 
 // OpenAI画像編集APIへの中継用Edge Function
 // - ブラウザからOpenAIへ直接fetchするとCORSでブロックされるため、これを経由する
-// - APIキーはNetlifyの環境変数(OPENAI_API_KEY)にのみ保存され、ブラウザには一切渡らない
+// - APIキーはNetlifyの環境変数(OPENAI_KEY_CUSTOM)にのみ保存され、ブラウザには一切渡らない
+// 注: 変数名を「OPENAI_API_KEY」ではなく「OPENAI_KEY_CUSTOM」にしているのは、
+//     Netlify側が同名の変数を自動管理する仕組みと衝突し、正しいキーが読めなかったため。
 
 export default async (request: Request, context: Context) => {
   if (request.method !== "POST") {
     return json({ error: "POSTメソッドのみ対応しています。" }, 405);
   }
 
-  const rawApiKey = Netlify.env.get("OPENAI_API_KEY");
+  const rawApiKey = Netlify.env.get("OPENAI_KEY_CUSTOM");
   // 環境変数に前後の空白・改行・引用符が混ざっていても安全に動くようにする
   const apiKey = rawApiKey?.trim().replace(/^["']|["']$/g, "");
   if (!apiKey) {
     return json(
-      { error: "サーバー側にOPENAI_API_KEYが設定されていません。Netlifyの環境変数を確認してください。" },
+      { error: "サーバー側にOPENAI_KEY_CUSTOMが設定されていません。Netlifyの環境変数を確認してください。" },
       500
     );
   }
