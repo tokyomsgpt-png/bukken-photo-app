@@ -28,7 +28,7 @@ export default async (request: Request, context: Context) => {
 
   const image = incoming.get("image");
   const prompt = incoming.get("prompt");
-  const model = (incoming.get("model") as string) || "gpt-image-1";
+  const model = (incoming.get("model") as string) || "gpt-image-2";
 
   if (!(image instanceof File)) {
     return json({ error: "画像(image)が送られていません。" }, 400);
@@ -62,7 +62,18 @@ export default async (request: Request, context: Context) => {
 
   if (!openaiRes.ok) {
     const message = data?.error?.message || `OpenAI APIエラー(status ${openaiRes.status})`;
-    return json({ error: message }, openaiRes.status);
+    // 調査用: キーそのものは伏せつつ、状況を切り分けるための情報を返す
+    return json({
+      error: message,
+      debug: {
+        httpStatus: openaiRes.status,
+        errorType: data?.error?.type ?? null,
+        errorCode: data?.error?.code ?? null,
+        keyPreview: apiKey.length >= 14 ? `${apiKey.slice(0, 10)}...${apiKey.slice(-4)}` : "(too short)",
+        keyLength: apiKey.length,
+        modelUsed: model,
+      },
+    }, openaiRes.status);
   }
 
   const b64 = data?.data?.[0]?.b64_json;
