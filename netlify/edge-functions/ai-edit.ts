@@ -9,7 +9,9 @@ export default async (request: Request, context: Context) => {
     return json({ error: "POSTメソッドのみ対応しています。" }, 405);
   }
 
-  const apiKey = Netlify.env.get("OPENAI_API_KEY");
+  const rawApiKey = Netlify.env.get("OPENAI_API_KEY");
+  // 環境変数に前後の空白・改行・引用符が混ざっていても安全に動くようにする
+  const apiKey = rawApiKey?.trim().replace(/^["']|["']$/g, "");
   if (!apiKey) {
     return json(
       { error: "サーバー側にOPENAI_API_KEYが設定されていません。Netlifyの環境変数を確認してください。" },
