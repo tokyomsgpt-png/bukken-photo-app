@@ -98,7 +98,7 @@
     <h2>設定</h2>
 
     <label>使用モデル</label>
-    <input type="text" id="cfgModel" value="gpt-image-1">
+    <input type="text" id="cfgModel" value="gpt-image-2">
     <div class="hint">OpenAI APIキーはサーバー側(Netlifyの環境変数 OPENAI_API_KEY)で管理しています。ブラウザには保存されません。</div>
 
     <label>出力サイズ(px)</label>
@@ -174,7 +174,7 @@ const DEFAULT_STAGING_PROMPT = `#目的
 ・ソファー`;
 
 const DEFAULT_CFG = {
-  model: "gpt-image-1",
+  model: "gpt-image-2",
   width: 640,
   height: 480,
   wmText: "東京マンション",
@@ -266,7 +266,10 @@ async function callAiEdit(file, prompt) {
     throw new Error(`AI加工エンドポイントに到達できませんでした(status ${res.status})。Edge Functionが未デプロイの可能性があります。`);
   }
   const data = await res.json();
-  if (!res.ok || data.error) throw new Error(data.error || `HTTP ${res.status}`);
+  if (!res.ok || data.error) {
+    const debugStr = data.debug ? ` [debug: ${JSON.stringify(data.debug)}]` : '';
+    throw new Error((data.error || `HTTP ${res.status}`) + debugStr);
+  }
   return data.b64_json;
 }
 
@@ -438,7 +441,7 @@ function openSettings() {
 
 document.getElementById('saveSettings').addEventListener('click', () => {
   cfg = {
-    model: document.getElementById('cfgModel').value || 'gpt-image-1',
+    model: document.getElementById('cfgModel').value || 'gpt-image-2',
     width: parseInt(document.getElementById('cfgWidth').value, 10) || 640,
     height: parseInt(document.getElementById('cfgHeight').value, 10) || 480,
     wmText: document.getElementById('cfgWmText').value || '東京マンション',
